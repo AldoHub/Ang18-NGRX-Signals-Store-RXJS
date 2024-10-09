@@ -1,5 +1,8 @@
-import { computed } from "@angular/core";
-import { signalStore, withComputed, withState } from "@ngrx/signals";
+import { computed, inject } from "@angular/core";
+import { patchState, signalStore, withComputed, withMethods, withState } from "@ngrx/signals";
+import { CardService } from "../services/card.service";
+import { rxMethod } from "@ngrx/signals/rxjs-interop";
+import { pipe, switchMap, tap } from "rxjs";
 
 export interface Card {
     id: string;
@@ -25,12 +28,22 @@ export const CardStore = signalStore(
     withState(initialState),
     withComputed(({cards}) => ({
         //we are just using the "cards" property of the state instead of passing the whole "state"
-        cards: computed(() => cards()),
+        cardsList: computed(() => cards()),
         cardsCount: computed(() => cards().length),
-        cardsSpellCount: computed(() => cards().filter((card) => card.type === ' Spell Card').length),
+        cardsSpellCount: computed(() => cards().filter((card) => card.type === 'Spell Card').length),
         
     })),
+    withMethods((store, cardService = inject(CardService)) => ({
+        loadPages: rxMethod<number>(
+            pipe(
+                tap(() => patchState(store, {state: 'Loading'})),
+                switchMap((page) => {
+                    return cardService.loadCards(page).pipe(tap(
+                        (cards) => patchState(store, {cards, state: 'Loaded'})
+                    ))
+                })
+            )
+        )
+    }))
 );
 
-
-//TODO 17:47

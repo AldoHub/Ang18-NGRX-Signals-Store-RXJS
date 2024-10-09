@@ -1,1 +1,18 @@
-<p>cardlist works!</p>
+<!-- <pre>{{store.cards() | json}}</pre> -->
+
+<table>
+    <tr>
+        <th>card name</th>
+        <th>card type</th>
+    </tr>
+    @for(card of store.cards(); track card.id) {
+        <tr>
+            <td>{{card.name}}</td>
+            <td>{{card.type}}</td>
+        </tr>
+    }
+</table>
+<pre>Page: {{page()}}</pre>
+<button (click)="nextPage()">Next Page</button>
+<br/>
+<pre>Spell Cards Count: {{store.cardsSpellCount()}}</pre>
